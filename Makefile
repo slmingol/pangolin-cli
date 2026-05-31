@@ -1,4 +1,6 @@
 CLI := npx ts-node src/cli.ts
+DOCKER := $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
+COMPOSE := $(DOCKER) compose
 
 .DEFAULT_GOAL := interactive
 
@@ -45,10 +47,10 @@ run:
 	$(CLI) $(ARGS)
 
 docker-build:
-	docker compose build
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) build
 
 docker-interactive:
-	docker compose run --rm pangolin-cli
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) --progress quiet run --rm pangolin-cli
 
 docker-run:
-	docker compose run --rm pangolin-cli $(ARGS)
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) --progress quiet run --rm pangolin-cli $(ARGS)
