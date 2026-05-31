@@ -238,8 +238,27 @@ Exports written to `/out` inside the container are saved to `./exports/` on the 
 - `hcHostname` and `hcPort` are auto-set to the target's own IP and port if not specified — required by Pangolin to send HC config to the newt client
 - Interval and timeout are in **seconds** (not ms)
 - TCP health checks require only interval/timeout/thresholds; HTTP checks additionally require scheme, path, method, and expected status code
+- `hcHealth` on the target API response is live status reported by the newt client: `healthy`, `unhealthy`, or `unknown`
+- Targets with internal Docker hostnames (e.g. `gerbil:8080`) will always show `unknown` — newt can't reach them via TCP from outside the network
+
+## API notes
+
+- Target update calls require `siteId`, `ip`, and `port` as base fields even for partial updates — omitting them returns HTTP 400
+- Pagination uses `page`/`pageSize` query params (not `limit`/`offset`); default page size is 20
+- Org `niceId` values with unicode characters must be URL-encoded in API paths (e.g. `my-org` → `l%C3%A2m%C3%B4labs`)
+- Resources have one target per tunnel site for redundancy — multiple targets with the same backend IP:port is expected, not a misconfiguration
 
 ## Integration API setup (traefik)
+
+Enable the Integration API in `config/config.yml`:
+
+```yaml
+flags:
+  enable_integration_api: true
+
+server:
+  integration_port: 3003
+```
 
 Add to `config/traefik/dynamic_config.yml`:
 
@@ -262,4 +281,12 @@ http:
           - url: "http://pangolin:3003"
 ```
 
+> **`priority: 200` is required.** Without it, Traefik's rule-length heuristic causes the existing `next-router` (which uses a `!PathPrefix` negation) to win over the integration router for `/v1/` paths.
+
 Replace `3003` with your `server.integration_port` value if different.
+
+## Future ideas
+
+- Export current config as Pangolin blueprint YAML (no native support yet — [GH issue #1496](https://github.com/fosrl/pangolin/issues/1496))
+- Terraform provider alternative: [stackopshq/terraform-provider-pangolin](https://github.com/stackopshq/terraform-provider-pangolin)
+- Dashboard filtering — show only unhealthy, filter by site
