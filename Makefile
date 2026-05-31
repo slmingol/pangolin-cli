@@ -1,6 +1,9 @@
 CLI := npx ts-node src/cli.ts
 DOCKER := $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
 COMPOSE := $(DOCKER) compose
+# PROD=1 → use ghcr image only (no build fallback, always pull fresh)
+# default → prefer ghcr if present, build locally if missing
+COMPOSE_FILES := $(if $(PROD),-f compose.yaml,)
 
 .DEFAULT_GOAL := interactive
 
@@ -47,10 +50,10 @@ run:
 	$(CLI) $(ARGS)
 
 docker-build:
-	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) build
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) $(COMPOSE_FILES) build
 
 docker-interactive:
-	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) --progress quiet run --rm pangolin-cli
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) $(COMPOSE_FILES) --progress quiet run --rm pangolin-cli
 
 docker-run:
-	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) --progress quiet run --rm pangolin-cli $(ARGS)
+	@PODMAN_COMPOSE_WARNING_LOGS=false $(COMPOSE) $(COMPOSE_FILES) --progress quiet run --rm pangolin-cli $(ARGS)

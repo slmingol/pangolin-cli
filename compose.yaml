@@ -1,17 +1,9 @@
 services:
   pangolin-cli:
-    build: .
     image: ghcr.io/slmingol/pangolin-cli:main
+    pull_policy: always
     env_file: .env
     stdin_open: true
     tty: true
-    # Run interactive wizard:
-    #   docker compose run --rm pangolin-cli
-    # Run a specific command:
-    #   docker compose run --rm pangolin-cli resources list
-    #   docker compose run --rm pangolin-cli export --output /out/current.yaml
-    #
-    # Uses ghcr.io image when available (docker compose pull).
-    # Falls back to local build when image not present.
     volumes:
       - ./exports:/out
