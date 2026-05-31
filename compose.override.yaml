@@ -1,0 +1,4 @@
+services:
+  pangolin-cli:
+    build: .
+    pull_policy: missing
