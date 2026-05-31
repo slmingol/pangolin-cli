@@ -1,5 +1,8 @@
 # pangolin-cli
 
+[![Build](https://github.com/slmingol/pangolin-cli/actions/workflows/docker.yml/badge.svg)](https://github.com/slmingol/pangolin-cli/actions/workflows/docker.yml)
+[![Image](https://ghcr-badge.egpl.dev/slmingol/pangolin-cli/latest_tag?trim=major&label=ghcr.io&color=blue)](https://github.com/slmingol/pangolin-cli/pkgs/container/pangolin-cli)
+
 CLI tool for bulk-managing resources, targets, and health checks on a self-hosted [Pangolin](https://github.com/fosrl/pangolin) instance via the Integration API.
 
 ## Prerequisites
