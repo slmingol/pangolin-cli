@@ -48,6 +48,8 @@ Pangolin CLI
   Update resources
   Delete resources
   Manage health checks
+  Manage targets
+  Live health status dashboard
   ──────────────────
   Exit
 ```
@@ -125,6 +127,52 @@ Will update targets on 6 resource(s):
   Disable on ALL resources
 ```
 
+#### Manage targets
+
+Per-resource target management: view, enable/disable individual targets, or change IP/port on a specific target.
+
+```
+? Which resource? App Service 01
+? What do you want to do?
+❯ View targets
+  Enable / disable specific targets
+  Change IP / port on a target
+```
+
+Selecting **Enable / disable specific targets** shows a checkbox list with each target's current site and enabled state:
+
+```
+? Select targets to toggle:
+  (space=toggle+next, a=all, i=invert, enter=confirm)
+ ◉ ❯ app-service-01.example.lan:80   My-Org Svcs #1 (docker-host-01)  enabled
+ ◯   app-service-01.example.lan:80   My-Org Svcs #2 (rockpi-4cplus)    enabled
+ ◯   app-service-01.example.lan:80   My-Org Svcs #3 (orangepi5)        enabled
+ ◯   app-service-01.example.lan:80   My-Org Svcs #4 (docker-host-03)  enabled
+```
+
+#### Live health status dashboard
+
+Polls `hcHealth` from the API every 10 seconds. Shows all enabled targets with active health checks. `q` to quit, `r` to refresh immediately.
+
+```
+Pangolin — Live Health Status   updated 9:32:16 PM   q=quit r=refresh
+────────────────────────────────────────────────────────────────────────────────
+  App Service 01
+    ● healthy    app-service-01.example.lan:80          tcp
+  App Service 02
+    ● healthy    app-service-02.example.lan:80          tcp
+  media-server
+    ● healthy    media-server.example.lan:13378   tcp
+  my-service
+    ● unhealthy  my-service.example.lan:8096       tcp
+  traefik-dashbd
+    ● unknown    gerbil:8080                    tcp
+────────────────────────────────────────────────────────────────────────────────
+86 healthy  1 unhealthy  1 unknown
+```
+
+> **Note:** Targets with an internal hostname (e.g. `gerbil:8080`) will remain `unknown` — newt cannot reach them via TCP from outside the Docker network.
+
 ### Make targets
 
 ```bash
@@ -136,6 +184,7 @@ make update FILTER="sso=true" SET="enabled=false"
 make delete FILTER="*old*" ARGS="--dry-run"
 make health CMD=enable ARGS="--all-resources --dry-run"
 make health CMD=status RESOURCE=my-service
+make dashboard                                       # live health status (polls every 10s)
 make run ARGS="targets list --resource media-server"
 make run ARGS="targets retarget --resource my-service --ip 10.0.1.5 --port 6767 --dry-run"
 ```
@@ -158,6 +207,7 @@ Commands:
   health enable       Enable HC on resource(s) (--resource or --all-resources)
   health disable      Disable HC on resource(s)
   health status       Show HC config for a resource's targets
+  dashboard           Live health status dashboard (polls every 10s, q=quit r=refresh)
 ```
 
 ## Docker
