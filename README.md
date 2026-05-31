@@ -217,23 +217,34 @@ Commands:
 
 ## Docker
 
-Build:
+A pre-built image is published to `ghcr.io/slmingol/pangolin-cli:main` on every push to `main`.
+
+`compose.yaml` (production) uses `pull_policy: always` — always pulls the ghcr image.
+`compose.override.yaml` (dev, auto-loaded) sets `pull_policy: missing` and adds a `build` section — pulls ghcr if available locally, otherwise builds from the Dockerfile.
+
+Interactive wizard (dev — ghcr if present, else build):
 
 ```bash
-docker compose build
+make docker-interactive
 ```
 
-Interactive wizard:
+Interactive wizard (prod — always pull fresh from ghcr, no build fallback):
 
 ```bash
-docker compose run --rm pangolin-cli
+make docker-interactive PROD=1
 ```
 
 Specific command:
 
 ```bash
-docker compose run --rm pangolin-cli resources list
-docker compose run --rm pangolin-cli export --output /out/current.yaml
+make docker-run ARGS="resources list"
+make docker-run ARGS="export --output /out/current.yaml"
+```
+
+Force local build:
+
+```bash
+make docker-build
 ```
 
 Exports written to `/out` inside the container are saved to `./exports/` on the host.
