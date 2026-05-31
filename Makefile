@@ -5,7 +5,11 @@ COMPOSE := $(DOCKER) compose
 # default → prefer ghcr if present, build locally if missing
 COMPOSE_FILES := $(if $(PROD),-f compose.yaml,)
 
-.DEFAULT_GOAL := interactive
+.DEFAULT_GOAL := help
+
+help:
+	@grep -E '^[a-zA-Z_-]+:' Makefile | grep -v '^\.PHONY' | \
+	  awk -F: '{printf "  %-20s\n", $$1}' | sort
 
 .PHONY: build install interactive export list filters update delete health dashboard run \
         docker-build docker-run docker-interactive
