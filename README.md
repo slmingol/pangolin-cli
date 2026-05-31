@@ -1,7 +1,11 @@
 # pangolin-cli
 
 [![Build](https://github.com/slmingol/pangolin-cli/actions/workflows/docker.yml/badge.svg)](https://github.com/slmingol/pangolin-cli/actions/workflows/docker.yml)
+[![Release](https://img.shields.io/github/v/release/slmingol/pangolin-cli)](https://github.com/slmingol/pangolin-cli/releases)
 [![Image](https://img.shields.io/badge/ghcr.io-slmingol%2Fpangolin--cli-blue?logo=docker)](https://github.com/slmingol/pangolin-cli/pkgs/container/pangolin-cli)
+[![Node](https://img.shields.io/badge/node-20-brightgreen?logo=node.js)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)](https://www.typescriptlang.org)
+[![Last commit](https://img.shields.io/github/last-commit/slmingol/pangolin-cli)](https://github.com/slmingol/pangolin-cli/commits/main)
 
 CLI tool for bulk-managing resources, targets, and health checks on a self-hosted [Pangolin](https://github.com/fosrl/pangolin) instance via the Integration API.
 
