@@ -2,7 +2,7 @@ CLI := npx ts-node src/cli.ts
 
 .DEFAULT_GOAL := interactive
 
-.PHONY: build install interactive export list filters update delete health run \
+.PHONY: build install interactive export list filters update delete health dashboard run \
         docker-build docker-run docker-interactive
 
 build:
@@ -37,6 +37,9 @@ delete:
 
 health:
 	$(CLI) health $(CMD) $(if $(RESOURCE),--resource "$(RESOURCE)",--all-resources) $(ARGS)
+
+dashboard:
+	$(CLI) dashboard
 
 run:
 	$(CLI) $(ARGS)
