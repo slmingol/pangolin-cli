@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { client } from '../api/client';
 import { Resource, TargetUpdatePayload, ResourceUpdatePayload } from '../types';
 import { checkbox } from '../checkbox';
+import { runDashboard } from './dashboard';
 
 export async function runInteractive() {
   console.log(chalk.bold('\nPangolin CLI\n'));
@@ -18,6 +19,8 @@ export async function runInteractive() {
         { name: 'Update resources', value: 'update' },
         { name: 'Delete resources', value: 'delete' },
         { name: 'Manage health checks', value: 'health' },
+        { name: 'Manage targets', value: 'targets' },
+        { name: 'Live health status dashboard', value: 'dashboard' },
         new inquirer.Separator(),
         { name: 'Exit', value: 'exit' },
       ],
@@ -31,6 +34,8 @@ export async function runInteractive() {
       if (action === 'update') await doUpdate();
       if (action === 'delete') await doDelete();
       if (action === 'health') await doHealth();
+      if (action === 'targets') await doTargets();
+      if (action === 'dashboard') await runDashboard();
     } catch (err) {
       if (err instanceof Error && err.message.includes('force closed')) break;
       console.error(chalk.red('Error:'), err instanceof Error ? err.message : err);
@@ -311,6 +316,109 @@ async function doHealth() {
       }
       console.log(chalk.yellow(`  disabled HC on: ${r.name}`));
     }
+  }
+}
+
+async function doTargets() {
+  const resources = await fetchWithSpinner('Fetching resources...');
+
+  const { resource } = await inquirer.prompt([{
+    type: 'list',
+    name: 'resource',
+    message: 'Which resource?',
+    choices: resources.map((r) => ({ name: r.name, value: r })),
+    pageSize: 20,
+  }]);
+
+  const targets = await client.listTargets((resource as Resource).resourceId);
+
+  if (targets.length === 0) {
+    console.log(chalk.yellow('No targets found.'));
+    return;
+  }
+
+  const { action } = await inquirer.prompt([{
+    type: 'list',
+    name: 'action',
+    message: 'What do you want to do?',
+    choices: [
+      { name: 'View targets', value: 'view' },
+      { name: 'Enable / disable specific targets', value: 'toggle' },
+      { name: 'Change IP / port on a target', value: 'retarget' },
+    ],
+  }]);
+
+  if (action === 'view') {
+    console.log();
+    console.log(chalk.bold(`${'ID'.padEnd(8)} ${'Address'.padEnd(32)} ${'Enabled'.padEnd(10)} HC`));
+    console.log(chalk.dim('─'.repeat(60)));
+    for (const t of targets) {
+      const enabled = t.enabled === false ? chalk.red('disabled') : chalk.green('enabled');
+      const hc = t.hcEnabled ? chalk.green('on') : chalk.dim('off');
+      console.log(`${String(t.targetId).padEnd(8)} ${`${t.ip}:${t.port}`.padEnd(32)} ${enabled.padEnd(18)} ${hc}`);
+    }
+    return;
+  }
+
+  if (action === 'toggle') {
+    const selected = await checkbox({
+      message: 'Select targets to toggle (currently shown with status):',
+      choices: targets.map((t) => ({
+        name: `${`${t.ip}:${t.port}`.padEnd(32)} ${t.enabled === false ? chalk.red('disabled') : chalk.green('enabled ')}`,
+        value: t,
+        short: `${t.ip}:${t.port}`,
+      })),
+      validate: (ans) => ans.length > 0 || 'Select at least one.',
+    });
+
+    const { enable } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'enable',
+      message: 'Enable selected targets? (No = disable)',
+      default: true,
+    }]);
+
+    const { confirm } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'confirm',
+      message: `${enable ? 'Enable' : 'Disable'} ${selected.length} target(s)?`,
+      default: false,
+    }]);
+    if (!confirm) { console.log('Aborted.'); return; }
+
+    for (const t of selected) {
+      await client.updateTarget(t.targetId, { siteId: t.siteId, ip: t.ip, port: t.port, enabled: enable });
+      console.log(`${enable ? chalk.green('enabled') : chalk.red('disabled')}: target ${t.targetId} (${t.ip}:${t.port})`);
+    }
+    return;
+  }
+
+  if (action === 'retarget') {
+    const { target } = await inquirer.prompt([{
+      type: 'list',
+      name: 'target',
+      message: 'Which target?',
+      choices: targets.map((t) => ({
+        name: `${t.ip}:${t.port} ${t.enabled === false ? chalk.red('(disabled)') : ''}`,
+        value: t,
+      })),
+    }]);
+
+    const answers = await inquirer.prompt([
+      { type: 'input', name: 'ip', message: 'New IP:', default: target.ip },
+      { type: 'input', name: 'port', message: 'New port:', default: String(target.port), validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    ]);
+
+    const { confirm } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'confirm',
+      message: `Update target ${target.targetId}: ${target.ip}:${target.port} → ${answers.ip}:${answers.port}?`,
+      default: false,
+    }]);
+    if (!confirm) { console.log('Aborted.'); return; }
+
+    await client.updateTarget(target.targetId, { siteId: target.siteId, ip: answers.ip, port: Number(answers.port) });
+    console.log(chalk.green(`Updated target ${target.targetId}`));
   }
 }
 
