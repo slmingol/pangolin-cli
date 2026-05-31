@@ -1,0 +1,14 @@
+services:
+  pangolin-cli:
+    build: .
+    image: pangolin-cli:latest
+    env_file: .env
+    stdin_open: true
+    tty: true
+    # Run interactive wizard:
+    #   docker compose run --rm pangolin-cli
+    # Run a specific command:
+    #   docker compose run --rm pangolin-cli resources list
+    #   docker compose run --rm pangolin-cli export --output /out/current.yaml
+    volumes:
+      - ./exports:/out
