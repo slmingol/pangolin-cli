@@ -186,6 +186,7 @@ make delete FILTER="*old*" ARGS="--dry-run"
 make health CMD=enable ARGS="--all-resources --dry-run"
 make health CMD=status RESOURCE=my-service
 make dashboard                                       # live health status (polls every 10s)
+make docker-interactive                              # interactive wizard inside container
 make run ARGS="targets list --resource media-server"
 make run ARGS="targets retarget --resource my-service --ip 10.0.1.5 --port 6767 --dry-run"
 ```
