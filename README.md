@@ -177,6 +177,7 @@ Pangolin — Live Health Status   updated 9:32:16 PM   q=quit r=refresh
 
 ```bash
 make export                                          # export all resources + targets to current.yaml
+make filters                                         # tabular view: name, niceId, sso, enabled
 make list                                            # list all resources
 make list ARGS="--filter '*App Service*'"               # filter by name glob
 make update FILTER="*App Service*" SET="sso=false" ARGS="--dry-run"
