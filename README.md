@@ -37,6 +37,94 @@ npx ts-node src/cli.ts
 
 Walks you through resource selection, field changes, and health check configuration without needing to know any flags.
 
+#### Main menu
+
+```
+Pangolin CLI
+
+? What do you want to do?
+❯ Export current config to YAML
+  List resources
+  Update resources
+  Delete resources
+  Manage health checks
+  ──────────────────
+  Exit
+```
+
+#### Resource selection
+
+Space toggles and auto-advances to the next item. `a` selects all, `i` inverts selection.
+
+```
+? Select resources to update:
+  (space=toggle+next, a=all, i=invert, enter=confirm)
+ ◉ ❯ PiAware 01                               sso
+ ◉   PiAware 02                               sso
+ ◉   PiAware 03                               sso
+ ◯   PiAware 04                               sso
+ ◯   PiAware 05                               sso
+ ◯   PiAware 06                               sso
+ ◯   audiobookshelf                           sso
+ ◯   bazarr                                   sso
+  (1-20 of 92)
+```
+
+#### Update menu
+
+```
+? What do you want to change?
+  ── Resource settings ──
+❯ SSO / Authentication
+  Block access
+  Enabled / Disabled
+  Sticky session
+  Maintenance mode
+  ── Target settings ──
+  Backend IP address
+  Backend port
+  Target enabled / disabled
+  Health check configuration
+```
+
+#### Health check configuration
+
+```
+? Enable health checks? Yes
+? Check type:
+❯ HTTP / HTTPS
+  TCP
+
+? Interval (seconds): 10
+? Timeout (seconds): 5
+? Healthy after N successes: 2
+? Unhealthy after N failures: 3
+? Scheme: http
+? Path: /health
+? Method: GET
+? Expected status code: 200
+? Follow redirects? No
+
+Will update targets on 6 resource(s):
+  PiAware 01
+  PiAware 02
+  ...
+? Apply changes? (y/N)
+```
+
+#### Health checks menu
+
+```
+? Health check action:
+❯ View status on a resource
+  ──────────────────────────
+  Configure & enable on selected resources
+  Configure & enable on ALL resources
+  ──────────────────────────
+  Disable on selected resources
+  Disable on ALL resources
+```
+
 ### Make targets
 
 ```bash
