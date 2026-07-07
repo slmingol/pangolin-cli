@@ -68,14 +68,14 @@ Space toggles and auto-advances to the next item. `a` selects all, `i` inverts s
 ```
 ? Select resources to update:
   (space=toggle+next, a=all, i=invert, enter=confirm)
- ◉ ❯ App Service 01                               sso
- ◉   App Service 02                               sso
- ◉   App Service 03                               sso
- ◯   App Service 04                               sso
- ◯   App Service 05                               sso
- ◯   App Service 06                               sso
- ◯   media-server                           sso
- ◯   my-service                                   sso
+ ◉ ❯ App Service 01                           sso
+ ◉   App Service 02                           sso
+ ◉   App Service 03                           sso
+ ◯   App Service 04                           sso
+ ◯   App Service 05                           sso
+ ◯   App Service 06                           sso
+ ◯   media-server                             sso
+ ◯   my-service                               sso
   (1-20 of 92)
 ```
 
@@ -146,15 +146,15 @@ Per-resource target management: view, enable/disable individual targets, or chan
   Change IP / port on a target
 ```
 
-Selecting **Enable / disable specific targets** shows a checkbox list with each target's current site and enabled state:
+Selecting **Enable / disable specific targets** shows a checkbox list with each target's address and enabled state:
 
 ```
-? Select targets to toggle:
+? Select targets to toggle (currently shown with status):
   (space=toggle+next, a=all, i=invert, enter=confirm)
- ◉ ❯ app-service-01.example.lan:80   My-Org Svcs #1 (docker-host-01)  enabled
- ◯   app-service-01.example.lan:80   My-Org Svcs #2 (rockpi-4cplus)    enabled
- ◯   app-service-01.example.lan:80   My-Org Svcs #3 (orangepi5)        enabled
- ◯   app-service-01.example.lan:80   My-Org Svcs #4 (docker-host-03)  enabled
+ ◉ ❯ app-service-01.example.lan:80         enabled
+ ◯   app-service-01.example.lan:80         enabled
+ ◯   app-service-01.example.lan:80         enabled
+ ◯   app-service-01.example.lan:80         enabled
 ```
 
 #### Live health status dashboard
@@ -165,13 +165,13 @@ Polls `hcHealth` from the API every 10 seconds. Shows all enabled targets with a
 Pangolin — Live Health Status   updated 9:32:16 PM   q=quit r=refresh
 ────────────────────────────────────────────────────────────────────────────────
   App Service 01
-    ● healthy    app-service-01.example.lan:80          tcp
+    ● healthy    app-service-01.example.lan:80   tcp
   App Service 02
-    ● healthy    app-service-02.example.lan:80          tcp
+    ● healthy    app-service-02.example.lan:80   tcp
   media-server
-    ● healthy    media-server.example.lan:13378   tcp
+    ● healthy    media-server.example.lan:8096   tcp
   my-service
-    ● unhealthy  my-service.example.lan:8096       tcp
+    ● unhealthy  my-service.example.lan:8080     tcp
   traefik-dashbd
     ● unknown    gerbil:8080                    tcp
 ────────────────────────────────────────────────────────────────────────────────
@@ -186,16 +186,19 @@ Pangolin — Live Health Status   updated 9:32:16 PM   q=quit r=refresh
 make export                                          # export all resources + targets to current.yaml
 make filters                                         # tabular view: name, niceId, sso, enabled
 make list                                            # list all resources
-make list ARGS="--filter '*PiAware*'"               # filter by name glob
-make update FILTER="*PiAware*" SET="sso=false" ARGS="--dry-run"
+make list ARGS="--filter '*Service*'"               # filter by name glob
+make update FILTER="*Service*" SET="sso=false" ARGS="--dry-run"
 make update FILTER="sso=true" SET="enabled=false"
 make delete FILTER="*old*" ARGS="--dry-run"
 make health CMD=enable ARGS="--all-resources --dry-run"
 make health CMD=status RESOURCE=my-service
 make dashboard                                       # live health status (polls every 10s)
 make docker-interactive                              # interactive wizard inside container
-make run ARGS="targets list --resource media-server"
-make run ARGS="targets retarget --resource my-service --ip 10.0.1.5 --port 6767 --dry-run"
+make run ARGS="targets list --resource my-resource"
+make run ARGS="targets retarget --resource my-resource --ip my-service.example.lan --port 8080 --dry-run"
+make run ARGS="targets update --resource my-resource --set hcEnabled=false --dry-run"
+make run ARGS="targets update --site my-site-niceid --set enabled=false --dry-run"
+make run ARGS="targets update --all-resources --set enabled=false --dry-run"
 ```
 
 ### Direct CLI
@@ -204,13 +207,13 @@ make run ARGS="targets retarget --resource my-service --ip 10.0.1.5 --port 6767 
 npx ts-node src/cli.ts <command> [options]
 
 Commands:
-  export              Export all resources and targets to YAML or JSON
+  export              Export all resources and targets to YAML or JSON (--include-sites, --format)
   resources list      List resources (--filter, --json)
   resources update    Bulk update resources (--filter, --set, --dry-run)
   resources delete    Bulk delete resources (--filter, --dry-run, --yes)
   targets list        List targets for a resource (--resource)
   targets retarget    Change IP/port on all targets of a resource
-  targets update      Bulk update target fields (--set hcEnabled=true ...)
+  targets update      Bulk update targets (--resource, --site, or --all-resources; --set, --dry-run)
   targets delete      Delete a target by ID
   health list         List org-level health checks
   health enable       Enable HC on resource(s) (--resource or --all-resources)
@@ -265,7 +268,7 @@ Exports written to `/out` inside the container are saved to `./exports/` on the 
 
 - Target update calls require `siteId`, `ip`, and `port` as base fields even for partial updates — omitting them returns HTTP 400
 - Pagination uses `page`/`pageSize` query params (not `limit`/`offset`); default page size is 20
-- Org `niceId` values with unicode characters must be URL-encoded in API paths (e.g. `my-org` → `l%C3%A2m%C3%B4labs`)
+- Org `niceId` values with unicode characters must be URL-encoded in API paths (e.g. `my-ôrg` → `my-%C3%B4rg`)
 - Resources have one target per tunnel site for redundancy — multiple targets with the same backend IP:port is expected, not a misconfiguration
 
 ## Integration API setup (traefik)
