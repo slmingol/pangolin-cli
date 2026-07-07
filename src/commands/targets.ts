@@ -89,7 +89,8 @@ export function registerTargetsCommand(program: Command) {
   cmd
     .command('update')
     .description('Bulk update targets for a resource')
-    .requiredOption('--resource <id>', 'Resource ID or niceId')
+    .option('--resource <id>', 'Resource ID or niceId (omit to apply across all resources)')
+    .option('--site <id>', 'Filter by site niceId or siteId (applies across all resources)')
     .option('--set <kv...>', 'Fields to set, e.g. --set hcEnabled=true hcPath=/health')
     .option('--all-resources', 'Apply to targets across all resources')
     .option('--dry-run', 'Preview without applying')
@@ -101,20 +102,32 @@ export function registerTargetsCommand(program: Command) {
           process.exit(1);
         }
 
-        if (opts.allResources) {
+        const siteId = opts.site ? await resolveSiteId(opts.site) : null;
+
+        if (opts.allResources || opts.site) {
           const resources = await client.getAllResources();
+          let total = 0;
           for (const r of resources) {
             const targets = await client.listTargets(r.resourceId);
-            for (const t of targets) {
+            const filtered = siteId !== null ? targets.filter((t) => t.siteId === siteId) : targets;
+            for (const t of filtered) {
+              total++;
               if (opts.dryRun) {
-                console.log(chalk.dim(`  would update target ${t.targetId} (resource: ${r.name})`));
+                console.log(chalk.dim(`  would update target ${t.targetId} (resource: ${r.name}, site: ${t.siteId})`));
               } else {
                 await client.updateTarget(t.targetId, { siteId: t.siteId, ip: t.ip, port: t.port, ...payload });
                 console.log(chalk.green(`  updated target ${t.targetId} (resource: ${r.name})`));
               }
             }
           }
+          if (opts.dryRun) console.log(chalk.bold(`\n[DRY RUN] would update ${total} target(s)`));
+          else console.log(chalk.bold(`\nUpdated ${total} target(s)`));
           return;
+        }
+
+        if (!opts.resource) {
+          console.error(chalk.red('Provide --resource <id>, --site <id>, or --all-resources'));
+          process.exit(1);
         }
 
         const resourceId = await resolveResourceId(opts.resource);
@@ -162,6 +175,15 @@ async function resolveResourceId(idOrNiceId: string): Promise<number> {
   const match = resources.find((r) => r.niceId === idOrNiceId || r.name === idOrNiceId);
   if (!match) throw new Error(`Resource not found: ${idOrNiceId}`);
   return match.resourceId;
+}
+
+async function resolveSiteId(idOrNiceId: string): Promise<number> {
+  const n = Number(idOrNiceId);
+  if (!isNaN(n)) return n;
+  const sites = await client.listSites();
+  const match = sites.find((s) => s.niceId === idOrNiceId || s.name === idOrNiceId);
+  if (!match) throw new Error(`Site not found: ${idOrNiceId}`);
+  return match.siteId;
 }
 
 function handleError(err: unknown): never {
