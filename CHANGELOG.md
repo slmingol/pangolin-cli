@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/slmingol/pangolin-cli/compare/v1.0.0...v1.1.0) (2026-07-07)
+
+
+### Features
+
+* **targets:** add --site filter to targets update for bulk disable by site ([cde88ef](https://github.com/slmingol/pangolin-cli/commit/cde88eff2daae5142788a597c68a92a84b6057ae))
+
 ## 1.0.0 (2026-05-31)
 
 
