@@ -42,12 +42,18 @@ export function registerResourcesCommand(program: Command) {
         if (opts.json) {
           console.log(JSON.stringify(resources, null, 2));
         } else {
-          console.log(chalk.bold(`${'ID'.padEnd(6)} ${'NiceID'.padEnd(30)} ${'Name'.padEnd(40)} SSO    Enabled`));
+          const idW     = Math.max(2, ...resources.map(r => String(r.resourceId).length));
+          const niceW   = Math.max(6, ...resources.map(r => (r.niceId ?? '').length));
+          const nameW   = Math.max(4, ...resources.map(r => (r.name ?? '').length));
+          console.log(chalk.bold(
+            `${'ID'.padEnd(idW)}  ${'NiceID'.padEnd(niceW)}  ${'Name'.padEnd(nameW)}  SSO   Enabled`
+          ));
           for (const r of resources) {
-            const sso = r.sso ? chalk.yellow('sso') : chalk.green('open');
+            const sso     = r.sso ? chalk.yellow('sso') : chalk.green('open');
+            const ssoPad  = r.sso ? ' ' : '';
             const enabled = r.enabled === false ? chalk.red('disabled') : chalk.green('enabled');
             console.log(
-              `${String(r.resourceId).padEnd(6)} ${(r.niceId ?? '').padEnd(30)} ${(r.name ?? '').padEnd(40)} ${sso.padEnd(12)} ${enabled}`
+              `${String(r.resourceId).padEnd(idW)}  ${(r.niceId ?? '').padEnd(niceW)}  ${(r.name ?? '').padEnd(nameW)}  ${sso}${ssoPad}  ${enabled}`
             );
           }
           console.log(chalk.dim(`\n${resources.length} resource(s)`));
