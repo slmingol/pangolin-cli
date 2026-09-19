@@ -24,6 +24,6 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.0"
+    "typescript": "^7.0.0"
   }
 }
