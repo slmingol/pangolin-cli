@@ -22,7 +22,7 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.9",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }
