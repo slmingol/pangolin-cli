@@ -9,22 +9,23 @@ export async function runInteractive() {
   console.log(chalk.bold('\nPangolin CLI\n'));
 
   while (true) {
-    const { action } = await inquirer.prompt([{
-      type: 'select',
-      name: 'action',
-      message: 'What do you want to do?',
-      choices: [
-        { name: 'Export current config to YAML', value: 'export' },
-        { name: 'List resources', value: 'list' },
-        { name: 'Update resources', value: 'update' },
-        { name: 'Delete resources', value: 'delete' },
-        { name: 'Manage health checks', value: 'health' },
-        { name: 'Manage targets', value: 'targets' },
-        { name: 'Live health status dashboard', value: 'dashboard' },
-        new inquirer.Separator(),
-        { name: 'Exit', value: 'exit' },
-      ],
-    }]);
+    const { action } = await inquirer.prompt({
+      action: {
+        type: 'select',
+        message: 'What do you want to do?',
+        choices: [
+          { name: 'Export current config to YAML', value: 'export' },
+          { name: 'List resources', value: 'list' },
+          { name: 'Update resources', value: 'update' },
+          { name: 'Delete resources', value: 'delete' },
+          { name: 'Manage health checks', value: 'health' },
+          { name: 'Manage targets', value: 'targets' },
+          { name: 'Live health status dashboard', value: 'dashboard' },
+          new inquirer.Separator(),
+          { name: 'Exit', value: 'exit' },
+        ],
+      },
+    });
 
     if (action === 'exit') break;
 
@@ -46,20 +47,22 @@ export async function runInteractive() {
 }
 
 async function doExport() {
-  const { file } = await inquirer.prompt([{
-    type: 'input',
-    name: 'file',
-    message: 'Output file:',
-    default: 'current.yaml',
-  }]);
+  const { file } = await inquirer.prompt({
+    file: {
+      type: 'input',
+      message: 'Output file:',
+      default: 'current.yaml',
+    },
+  });
 
-  const { format } = await inquirer.prompt([{
-    type: 'select',
-    name: 'format',
-    message: 'Format:',
-    choices: ['yaml', 'json'],
-    default: 'yaml',
-  }]);
+  const { format } = await inquirer.prompt({
+    format: {
+      type: 'select',
+      message: 'Format:',
+      choices: ['yaml', 'json'],
+      default: 'yaml',
+    },
+  });
 
   const resources = await fetchWithSpinner('Fetching resources...');
   const yaml = await import('js-yaml');
@@ -106,24 +109,25 @@ async function doUpdate() {
     validate: (ans) => ans.length > 0 || 'Select at least one resource.',
   });
 
-  const { category } = await inquirer.prompt([{
-    type: 'select',
-    name: 'category',
-    message: 'What do you want to change?',
-    choices: [
-      new inquirer.Separator('── Resource settings ──'),
-      { name: 'SSO / Authentication', value: 'sso' },
-      { name: 'Block access', value: 'blockAccess' },
-      { name: 'Enabled / Disabled', value: 'enabled' },
-      { name: 'Sticky session', value: 'stickySession' },
-      { name: 'Maintenance mode', value: 'maintenanceModeEnabled' },
-      new inquirer.Separator('── Target settings ──'),
-      { name: 'Backend IP address', value: 'target:ip' },
-      { name: 'Backend port', value: 'target:port' },
-      { name: 'Target enabled / disabled', value: 'target:enabled' },
-      { name: 'Health check configuration', value: 'target:health' },
-    ],
-  }]);
+  const { category } = await inquirer.prompt({
+    category: {
+      type: 'select',
+      message: 'What do you want to change?',
+      choices: [
+        new inquirer.Separator('── Resource settings ──'),
+        { name: 'SSO / Authentication', value: 'sso' },
+        { name: 'Block access', value: 'blockAccess' },
+        { name: 'Enabled / Disabled', value: 'enabled' },
+        { name: 'Sticky session', value: 'stickySession' },
+        { name: 'Maintenance mode', value: 'maintenanceModeEnabled' },
+        new inquirer.Separator('── Target settings ──'),
+        { name: 'Backend IP address', value: 'target:ip' },
+        { name: 'Backend port', value: 'target:port' },
+        { name: 'Target enabled / disabled', value: 'target:enabled' },
+        { name: 'Health check configuration', value: 'target:health' },
+      ],
+    },
+  });
 
   const isTargetUpdate = category.startsWith('target:');
 
@@ -136,20 +140,21 @@ async function doUpdate() {
       maintenanceModeEnabled: 'Enable maintenance mode?',
     };
 
-    const { value } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'value',
-      message: fieldLabel[category],
-    }]);
+    const { value } = await inquirer.prompt({
+      value: {
+        type: 'confirm',
+        message: fieldLabel[category],
+      },
+    });
 
     const payload: ResourceUpdatePayload = { [category]: value };
 
     console.log(chalk.bold(`\nWill set ${category}=${value} on ${(selected).length} resource(s):`));
     for (const r of selected) console.log(chalk.dim(`  ${r.name}`));
 
-    const { confirm } = await inquirer.prompt([{
-      type: 'confirm', name: 'confirm', message: 'Apply changes?', default: false,
-    }]);
+    const { confirm } = await inquirer.prompt({
+      confirm: { type: 'confirm', message: 'Apply changes?', default: false },
+    });
     if (!confirm) { console.log('Aborted.'); return; }
 
     for (const r of selected) {
@@ -164,13 +169,13 @@ async function doUpdate() {
   let targetPayload: TargetUpdatePayload = {};
 
   if (field === 'ip') {
-    const { ip } = await inquirer.prompt([{ type: 'input', name: 'ip', message: 'New backend IP:' }]);
+    const { ip } = await inquirer.prompt({ ip: { type: 'input', message: 'New backend IP:' } });
     targetPayload = { ip };
   } else if (field === 'port') {
-    const { port } = await inquirer.prompt([{ type: 'input', name: 'port', message: 'New backend port:', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' }]);
+    const { port } = await inquirer.prompt({ port: { type: 'input', message: 'New backend port:', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' } });
     targetPayload = { port: Number(port) };
   } else if (field === 'enabled') {
-    const { value } = await inquirer.prompt([{ type: 'confirm', name: 'value', message: 'Enable targets?' }]);
+    const { value } = await inquirer.prompt({ value: { type: 'confirm', message: 'Enable targets?' } });
     targetPayload = { enabled: value };
   } else if (field === 'health') {
     targetPayload = await promptHcConfig();
@@ -179,9 +184,9 @@ async function doUpdate() {
   console.log(chalk.bold(`\nWill update targets on ${(selected).length} resource(s):`));
   for (const r of selected) console.log(chalk.dim(`  ${r.name}`));
 
-  const { confirm } = await inquirer.prompt([{
-    type: 'confirm', name: 'confirm', message: 'Apply changes?', default: false,
-  }]);
+  const { confirm } = await inquirer.prompt({
+    confirm: { type: 'confirm', message: 'Apply changes?', default: false },
+  });
   if (!confirm) { console.log('Aborted.'); return; }
 
   for (const r of selected) {
@@ -213,11 +218,12 @@ async function doDelete() {
     console.log(chalk.red(`  ${r.name} (${r.fullDomain ?? r.resourceId})`));
   }
 
-  const { confirm } = await inquirer.prompt([{
-    type: 'input',
-    name: 'confirm',
-    message: `Type "delete" to confirm:`,
-  }]);
+  const { confirm } = await inquirer.prompt({
+    confirm: {
+      type: 'input',
+      message: `Type "delete" to confirm:`,
+    },
+  });
 
   if (confirm !== 'delete') { console.log('Aborted.'); return; }
 
@@ -228,31 +234,33 @@ async function doDelete() {
 }
 
 async function doHealth() {
-  const { action } = await inquirer.prompt([{
-    type: 'select',
-    name: 'action',
-    message: 'Health check action:',
-    choices: [
-      { name: 'View status on a resource', value: 'status' },
-      new inquirer.Separator(),
-      { name: 'Configure & enable on selected resources', value: 'configure-some' },
-      { name: 'Configure & enable on ALL resources', value: 'configure-all' },
-      new inquirer.Separator(),
-      { name: 'Disable on selected resources', value: 'disable-some' },
-      { name: 'Disable on ALL resources', value: 'disable-all' },
-    ],
-  }]);
+  const { action } = await inquirer.prompt({
+    action: {
+      type: 'select',
+      message: 'Health check action:',
+      choices: [
+        { name: 'View status on a resource', value: 'status' },
+        new inquirer.Separator(),
+        { name: 'Configure & enable on selected resources', value: 'configure-some' },
+        { name: 'Configure & enable on ALL resources', value: 'configure-all' },
+        new inquirer.Separator(),
+        { name: 'Disable on selected resources', value: 'disable-some' },
+        { name: 'Disable on ALL resources', value: 'disable-all' },
+      ],
+    },
+  });
 
   const resources = await fetchWithSpinner('Fetching resources...');
 
   if (action === 'status') {
-    const { resource } = await inquirer.prompt([{
-      type: 'select',
-      name: 'resource',
-      message: 'Which resource?',
-      choices: resources.map((r) => ({ name: r.name, value: r })),
-      pageSize: 20,
-    }]);
+    const { resource } = await inquirer.prompt({
+      resource: {
+        type: 'select',
+        message: 'Which resource?',
+        choices: resources.map((r) => ({ name: r.name, value: r })),
+        pageSize: 20,
+      },
+    });
     const targets = await client.listTargets((resource as Resource).resourceId);
     console.log();
     for (const t of targets) {
@@ -284,12 +292,13 @@ async function doHealth() {
   if (enabling) {
     const hcPayload = await promptHcConfig();
 
-    const { confirm } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'confirm',
-      message: `Apply to ${targetResources.length} resource(s)?`,
-      default: false,
-    }]);
+    const { confirm } = await inquirer.prompt({
+      confirm: {
+        type: 'confirm',
+        message: `Apply to ${targetResources.length} resource(s)?`,
+        default: false,
+      },
+    });
     if (!confirm) { console.log('Aborted.'); return; }
 
     for (const r of targetResources) {
@@ -301,12 +310,13 @@ async function doHealth() {
       console.log(chalk.green(`  configured HC on: ${r.name}`));
     }
   } else {
-    const { confirm } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'confirm',
-      message: `Disable health checks on ${targetResources.length} resource(s)?`,
-      default: false,
-    }]);
+    const { confirm } = await inquirer.prompt({
+      confirm: {
+        type: 'confirm',
+        message: `Disable health checks on ${targetResources.length} resource(s)?`,
+        default: false,
+      },
+    });
     if (!confirm) { console.log('Aborted.'); return; }
 
     for (const r of targetResources) {
@@ -322,13 +332,14 @@ async function doHealth() {
 async function doTargets() {
   const resources = await fetchWithSpinner('Fetching resources...');
 
-  const { resource } = await inquirer.prompt([{
-    type: 'select',
-    name: 'resource',
-    message: 'Which resource?',
-    choices: resources.map((r) => ({ name: r.name, value: r })),
-    pageSize: 20,
-  }]);
+  const { resource } = await inquirer.prompt({
+    resource: {
+      type: 'select',
+      message: 'Which resource?',
+      choices: resources.map((r) => ({ name: r.name, value: r })),
+      pageSize: 20,
+    },
+  });
 
   const targets = await client.listTargets((resource as Resource).resourceId);
 
@@ -337,16 +348,17 @@ async function doTargets() {
     return;
   }
 
-  const { action } = await inquirer.prompt([{
-    type: 'select',
-    name: 'action',
-    message: 'What do you want to do?',
-    choices: [
-      { name: 'View targets', value: 'view' },
-      { name: 'Enable / disable specific targets', value: 'toggle' },
-      { name: 'Change IP / port on a target', value: 'retarget' },
-    ],
-  }]);
+  const { action } = await inquirer.prompt({
+    action: {
+      type: 'select',
+      message: 'What do you want to do?',
+      choices: [
+        { name: 'View targets', value: 'view' },
+        { name: 'Enable / disable specific targets', value: 'toggle' },
+        { name: 'Change IP / port on a target', value: 'retarget' },
+      ],
+    },
+  });
 
   if (action === 'view') {
     console.log();
@@ -371,19 +383,21 @@ async function doTargets() {
       validate: (ans) => ans.length > 0 || 'Select at least one.',
     });
 
-    const { enable } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'enable',
-      message: 'Enable selected targets? (No = disable)',
-      default: true,
-    }]);
+    const { enable } = await inquirer.prompt({
+      enable: {
+        type: 'confirm',
+        message: 'Enable selected targets? (No = disable)',
+        default: true,
+      },
+    });
 
-    const { confirm } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'confirm',
-      message: `${enable ? 'Enable' : 'Disable'} ${selected.length} target(s)?`,
-      default: false,
-    }]);
+    const { confirm } = await inquirer.prompt({
+      confirm: {
+        type: 'confirm',
+        message: `${enable ? 'Enable' : 'Disable'} ${selected.length} target(s)?`,
+        default: false,
+      },
+    });
     if (!confirm) { console.log('Aborted.'); return; }
 
     for (const t of selected) {
@@ -394,27 +408,29 @@ async function doTargets() {
   }
 
   if (action === 'retarget') {
-    const { target } = await inquirer.prompt([{
-      type: 'select',
-      name: 'target',
-      message: 'Which target?',
-      choices: targets.map((t) => ({
-        name: `${t.ip}:${t.port} ${t.enabled === false ? chalk.red('(disabled)') : ''}`,
-        value: t,
-      })),
-    }]);
+    const { target } = await inquirer.prompt({
+      target: {
+        type: 'select',
+        message: 'Which target?',
+        choices: targets.map((t) => ({
+          name: `${t.ip}:${t.port} ${t.enabled === false ? chalk.red('(disabled)') : ''}`,
+          value: t,
+        })),
+      },
+    });
 
-    const answers = await inquirer.prompt([
-      { type: 'input', name: 'ip', message: 'New IP:', default: target.ip },
-      { type: 'input', name: 'port', message: 'New port:', default: String(target.port), validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-    ]);
+    const answers = await inquirer.prompt({
+      ip: { type: 'input', message: 'New IP:', default: target.ip },
+      port: { type: 'input', message: 'New port:', default: String(target.port), validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    });
 
-    const { confirm } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'confirm',
-      message: `Update target ${target.targetId}: ${target.ip}:${target.port} → ${answers.ip}:${answers.port}?`,
-      default: false,
-    }]);
+    const { confirm } = await inquirer.prompt({
+      confirm: {
+        type: 'confirm',
+        message: `Update target ${target.targetId}: ${target.ip}:${target.port} → ${answers.ip}:${answers.port}?`,
+        default: false,
+      },
+    });
     if (!confirm) { console.log('Aborted.'); return; }
 
     await client.updateTarget(target.targetId, { siteId: target.siteId, ip: answers.ip, port: Number(answers.port) });
@@ -423,28 +439,29 @@ async function doTargets() {
 }
 
 async function promptHcConfig(): Promise<TargetUpdatePayload> {
-  const { hcEnabled } = await inquirer.prompt([{
-    type: 'confirm', name: 'hcEnabled', message: 'Enable health checks?', default: true,
-  }]);
+  const { hcEnabled } = await inquirer.prompt({
+    hcEnabled: { type: 'confirm', message: 'Enable health checks?', default: true },
+  });
 
   if (!hcEnabled) return { hcEnabled: false };
 
-  const { hcMode } = await inquirer.prompt([{
-    type: 'select',
-    name: 'hcMode',
-    message: 'Check type:',
-    choices: [
-      { name: 'HTTP / HTTPS', value: 'http' },
-      { name: 'TCP', value: 'tcp' },
-    ],
-  }]);
+  const { hcMode } = await inquirer.prompt({
+    hcMode: {
+      type: 'select',
+      message: 'Check type:',
+      choices: [
+        { name: 'HTTP / HTTPS', value: 'http' },
+        { name: 'TCP', value: 'tcp' },
+      ],
+    },
+  });
 
-  const common = await inquirer.prompt([
-    { type: 'input', name: 'hcInterval', message: 'Interval (seconds):', default: '10', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-    { type: 'input', name: 'hcTimeout', message: 'Timeout (seconds):', default: '5', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-    { type: 'input', name: 'hcHealthyThreshold', message: 'Healthy after N successes:', default: '2', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-    { type: 'input', name: 'hcUnhealthyThreshold', message: 'Unhealthy after N failures:', default: '3', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-  ]);
+  const common = await inquirer.prompt({
+    hcInterval: { type: 'input', message: 'Interval (seconds):', default: '10', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    hcTimeout: { type: 'input', message: 'Timeout (seconds):', default: '5', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    hcHealthyThreshold: { type: 'input', message: 'Healthy after N successes:', default: '2', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    hcUnhealthyThreshold: { type: 'input', message: 'Unhealthy after N failures:', default: '3', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+  });
 
   const base: TargetUpdatePayload = {
     hcEnabled: true,
@@ -457,13 +474,13 @@ async function promptHcConfig(): Promise<TargetUpdatePayload> {
 
   if (hcMode === 'tcp') return base;
 
-  const http = await inquirer.prompt([
-    { type: 'select', name: 'hcScheme', message: 'Scheme:', choices: ['http', 'https'], default: 'http' },
-    { type: 'input', name: 'hcPath', message: 'Path:', default: '/health' },
-    { type: 'select', name: 'hcMethod', message: 'Method:', choices: ['GET', 'HEAD'], default: 'GET' },
-    { type: 'input', name: 'hcStatus', message: 'Expected status code:', default: '200', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
-    { type: 'confirm', name: 'hcFollowRedirects', message: 'Follow redirects?', default: false },
-  ]);
+  const http = await inquirer.prompt({
+    hcScheme: { type: 'select', message: 'Scheme:', choices: ['http', 'https'], default: 'http' },
+    hcPath: { type: 'input', message: 'Path:', default: '/health' },
+    hcMethod: { type: 'select', message: 'Method:', choices: ['GET', 'HEAD'], default: 'GET' },
+    hcStatus: { type: 'input', message: 'Expected status code:', default: '200', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
+    hcFollowRedirects: { type: 'confirm', message: 'Follow redirects?', default: false },
+  });
 
   return {
     ...base,
