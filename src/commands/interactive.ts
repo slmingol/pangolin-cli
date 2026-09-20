@@ -10,7 +10,7 @@ export async function runInteractive() {
 
   while (true) {
     const { action } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'action',
       message: 'What do you want to do?',
       choices: [
@@ -54,7 +54,7 @@ async function doExport() {
   }]);
 
   const { format } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'format',
     message: 'Format:',
     choices: ['yaml', 'json'],
@@ -107,7 +107,7 @@ async function doUpdate() {
   });
 
   const { category } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'category',
     message: 'What do you want to change?',
     choices: [
@@ -229,7 +229,7 @@ async function doDelete() {
 
 async function doHealth() {
   const { action } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'action',
     message: 'Health check action:',
     choices: [
@@ -247,7 +247,7 @@ async function doHealth() {
 
   if (action === 'status') {
     const { resource } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'resource',
       message: 'Which resource?',
       choices: resources.map((r) => ({ name: r.name, value: r })),
@@ -323,7 +323,7 @@ async function doTargets() {
   const resources = await fetchWithSpinner('Fetching resources...');
 
   const { resource } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'resource',
     message: 'Which resource?',
     choices: resources.map((r) => ({ name: r.name, value: r })),
@@ -338,7 +338,7 @@ async function doTargets() {
   }
 
   const { action } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'action',
     message: 'What do you want to do?',
     choices: [
@@ -395,7 +395,7 @@ async function doTargets() {
 
   if (action === 'retarget') {
     const { target } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'target',
       message: 'Which target?',
       choices: targets.map((t) => ({
@@ -430,7 +430,7 @@ async function promptHcConfig(): Promise<TargetUpdatePayload> {
   if (!hcEnabled) return { hcEnabled: false };
 
   const { hcMode } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'hcMode',
     message: 'Check type:',
     choices: [
@@ -458,9 +458,9 @@ async function promptHcConfig(): Promise<TargetUpdatePayload> {
   if (hcMode === 'tcp') return base;
 
   const http = await inquirer.prompt([
-    { type: 'list', name: 'hcScheme', message: 'Scheme:', choices: ['http', 'https'], default: 'http' },
+    { type: 'select', name: 'hcScheme', message: 'Scheme:', choices: ['http', 'https'], default: 'http' },
     { type: 'input', name: 'hcPath', message: 'Path:', default: '/health' },
-    { type: 'list', name: 'hcMethod', message: 'Method:', choices: ['GET', 'HEAD'], default: 'GET' },
+    { type: 'select', name: 'hcMethod', message: 'Method:', choices: ['GET', 'HEAD'], default: 'GET' },
     { type: 'input', name: 'hcStatus', message: 'Expected status code:', default: '200', validate: (v: string) => !isNaN(Number(v)) || 'Must be a number' },
     { type: 'confirm', name: 'hcFollowRedirects', message: 'Follow redirects?', default: false },
   ]);
