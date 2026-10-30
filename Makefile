@@ -1,4 +1,4 @@
-CLI     := npx tsx src/cli.ts
+CLI     := ./node_modules/.bin/tsx src/cli.ts
 DOCKER  := $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
 COMPOSE := $(DOCKER) compose
 # PROD=1 → use ghcr image only (no build fallback, always pull fresh)
