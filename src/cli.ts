@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { version } from '../package.json';
 import { registerExportCommand } from './commands/export';
 import { registerResourcesCommand } from './commands/resources';
 import { registerTargetsCommand } from './commands/targets';
@@ -12,7 +13,7 @@ const program = new Command();
 program
   .name('pangolin-cli')
   .description('CLI tools for managing Pangolin resources')
-  .version('0.1.0')
+  .version(version)
   .action(() => runInteractive());
 
 program
