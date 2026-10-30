@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/slmingol/pangolin-cli/compare/v1.1.1...v1.1.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** replace ts-node with tsx for Node 26 compatibility ([ff18e59](https://github.com/slmingol/pangolin-cli/commit/ff18e59abfde810bd9a37efe86259243454a02f4))
+* **makefile:** use local tsx binary instead of npx fallback ([d03b45f](https://github.com/slmingol/pangolin-cli/commit/d03b45f0e15a7aa8a236eaa9a25f0b6d0b7862cc))
+* read version from package.json, add typecheck script, drop dead allowScripts ([1d32ebf](https://github.com/slmingol/pangolin-cli/commit/1d32ebfa830a2635cb6d1084944845d71308e7d6))
+
 ## [1.1.1](https://github.com/slmingol/pangolin-cli/compare/v1.1.0...v1.1.1) (2026-09-20)
 
 
